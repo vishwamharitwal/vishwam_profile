@@ -3,6 +3,9 @@ import { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import {
   BallCollider,
   Physics,
@@ -10,6 +13,8 @@ import {
   CylinderCollider,
   RapierRigidBody,
 } from "@react-three/rapier";
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const textureLoader = new THREE.TextureLoader();
 const imageUrls = [
@@ -127,30 +132,18 @@ function Pointer({ vec = new THREE.Vector3(), isActive }: PointerProps) {
 const TechStack = () => {
   const [isActive, setIsActive] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const threshold = document
-        .getElementById("work")!
-        .getBoundingClientRect().top;
-      setIsActive(scrollY > threshold);
-    };
-    document.querySelectorAll(".header a").forEach((elem) => {
-      const element = elem as HTMLAnchorElement;
-      element.addEventListener("click", () => {
-        const interval = setInterval(() => {
-          handleScroll();
-        }, 10);
-        setTimeout(() => {
-          clearInterval(interval);
-        }, 1000);
-      });
+  useGSAP(() => {
+    ScrollTrigger.create({
+      trigger: ".techstack",
+      start: "top 60%", // Activate later to avoid overlap
+      end: "bottom center",
+      toggleActions: "play pause resume reset",
+      onToggle: (self) => setIsActive(self.isActive),
+      onEnter: () => gsap.set(".techstack", { zIndex: 100 }),
+      onLeaveBack: () => gsap.set(".techstack", { zIndex: 1 }),
     });
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
   }, []);
+
   const materials = useMemo(() => {
     return textures.map(
       (texture) =>
@@ -167,7 +160,14 @@ const TechStack = () => {
   }, []);
 
   return (
-    <div className="techstack">
+    <div 
+      className="techstack" 
+      style={{ 
+        visibility: isActive ? "visible" : "hidden",
+        opacity: isActive ? 1 : 0,
+        transition: "opacity 0.5s ease-in-out"
+      }}
+    >
       <h2> My Techstack</h2>
 
       <Canvas

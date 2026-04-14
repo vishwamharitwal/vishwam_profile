@@ -96,6 +96,8 @@ body {
   position: relative;
   height: var(--vh);
   margin: auto;
+  background-color: #0b080c; /* Matches root background */
+  z-index: 10;
   margin-top: 50px;
   margin-bottom: -100px;
 }
